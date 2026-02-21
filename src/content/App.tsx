@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import CaptureSelection from "./components/CaptureSelection";
 import Overlay from "./components/Overlay";
 import ModeToggle from "./components/ModeToggle";
 import { useMode } from "./hooks/useMode";
@@ -24,6 +25,7 @@ export default function App() {
     <>
       <ModeToggle mode={mode} setMode={setMode} />
       <Overlay mode={mode} />
+      {mode === "capture" && <CaptureSelection onDone={() => setMode("annotate")} />}
     </>
   );
 }

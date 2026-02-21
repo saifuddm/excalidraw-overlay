@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export type Mode = "off" | "browse" | "annotate";
+export type Mode = "off" | "browse" | "annotate" | "capture";
 
 export function useMode() {
   const [mode, setMode] = useState<Mode>("off");
@@ -15,11 +15,7 @@ export function useMode() {
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        mode === "annotate" &&
-        event.code === "Space" &&
-        !isTypingTarget(event.target)
-      ) {
+      if (mode === "annotate" && event.code === "Space" && !isTypingTarget(event.target)) {
         event.preventDefault();
       }
 
@@ -30,12 +26,13 @@ export function useMode() {
 
       if (mode === "off") return;
 
-      if (event.key === "Alt" && mode === "annotate") {
-        setMode("browse");
-      }
 
       if (event.key === "Escape" && mode === "annotate") {
         setMode("browse");
+      }
+
+      if (event.key === "Escape" && mode === "capture") {
+        setMode("annotate");
       }
     };
 

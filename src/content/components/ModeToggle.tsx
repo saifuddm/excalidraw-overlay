@@ -56,6 +56,18 @@ export default function ModeToggle({ mode, setMode }: ModeToggleProps) {
       >
         Annotate
       </button>
+      {(mode === "annotate" || mode === "capture") && (
+        <button
+          type="button"
+          onClick={() => setMode("capture")}
+          style={{
+            ...buttonBaseStyle,
+            background: mode === "capture" ? "#4f46e5" : "#3f3f46",
+          }}
+        >
+          Capture
+        </button>
+      )}
       <button
         type="button"
         onClick={() => setMode("off")}
