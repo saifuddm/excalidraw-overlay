@@ -30,6 +30,9 @@ The floating toolbar appears at the top-right when the extension is active.
 - **Capture**: starts region-selection mode; after you drag to select an area, the screenshot is inserted into the Excalidraw scene and mode returns to Annotate.
 - **Off**: closes the overlay completely.
 - **Sync scroll (checkbox)**: when enabled, scrolling the webpage and panning the Excalidraw viewport stay in sync (active during browse/annotate behavior).
+- **Scroll target (Auto/Window)**:
+  - `Auto` (recommended) syncs with the active scroll surface, including nested containers such as full-height chat panes using `overflow-y: auto`.
+  - `Window` forces legacy behavior and syncs only with document/window scrolling.
 
 ## Keyboard Shortcuts
 
