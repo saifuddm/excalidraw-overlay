@@ -3,7 +3,7 @@ import {
   Excalidraw,
   viewportCoordsToSceneCoords,
 } from "@excalidraw/excalidraw";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { BinaryFileData, ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import type { CaptureResult } from "../types";
 import type { Mode } from "../hooks/useMode";
@@ -33,6 +33,7 @@ export default function Overlay({
   const isAnnotating = mode === "annotate";
   const isBrowseLikeMode = mode === "browse" || mode === "capture";
   const excalidrawApiRef = useRef<ExcalidrawImperativeAPI | null>(null);
+  const [isApiReady, setIsApiReady] = useState(false);
   const isSyncingFromCanvasRef = useRef(false);
   const isSyncingFromPageRef = useRef(false);
   const previousCanvasScrollRef = useRef<{ x: number; y: number } | null>(null);
@@ -167,7 +168,7 @@ export default function Overlay({
       isSyncingFromCanvasRef.current = false;
       isSyncingFromPageRef.current = false;
     };
-  }, [mode, syncScrollEnabled]);
+  }, [isApiReady, mode, syncScrollEnabled]);
 
   useEffect(() => {
     if (mode !== "annotate" || !pendingCapture) return;
@@ -287,6 +288,7 @@ export default function Overlay({
       <Excalidraw
         excalidrawAPI={(api) => {
           excalidrawApiRef.current = api;
+          setIsApiReady(Boolean(api));
         }}
         initialData={{
           appState: {
