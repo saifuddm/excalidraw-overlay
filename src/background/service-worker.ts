@@ -10,9 +10,17 @@ type CaptureRegion = {
   height: number;
 };
 
+type CaptureViewport = {
+  width: number;
+  height: number;
+};
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "CAPTURE_VISIBLE_TAB") {
-    handleCaptureVisibleTab(message.region as CaptureRegion)
+    handleCaptureVisibleTab(
+      message.region as CaptureRegion,
+      message.viewport as CaptureViewport | undefined
+    )
       .then((dataUrl) => sendResponse({ dataUrl }))
       .catch((error: unknown) => {
         const message =
@@ -32,7 +40,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
-async function handleCaptureVisibleTab(region: CaptureRegion): Promise<string> {
+async function handleCaptureVisibleTab(
+  region: CaptureRegion,
+  viewport: CaptureViewport | undefined
+): Promise<string> {
   const dataUrl = await new Promise<string>((resolve, reject) => {
     chrome.tabs.captureVisibleTab(
       {
@@ -52,18 +63,28 @@ async function handleCaptureVisibleTab(region: CaptureRegion): Promise<string> {
       }
     );
   });
-  return cropDataUrl(dataUrl, region);
+  return cropDataUrl(dataUrl, region, viewport);
 }
 
-async function cropDataUrl(dataUrl: string, region: CaptureRegion): Promise<string> {
+async function cropDataUrl(
+  dataUrl: string,
+  region: CaptureRegion,
+  viewport: CaptureViewport | undefined
+): Promise<string> {
   const response = await fetch(dataUrl);
   const blob = await response.blob();
   const bitmap = await createImageBitmap(blob);
 
-  const left = Math.max(0, Math.floor(region.left));
-  const top = Math.max(0, Math.floor(region.top));
-  const width = Math.max(1, Math.floor(region.width));
-  const height = Math.max(1, Math.floor(region.height));
+  const viewportWidth = Math.max(1, Math.floor(viewport?.width ?? bitmap.width));
+  const viewportHeight = Math.max(1, Math.floor(viewport?.height ?? bitmap.height));
+
+  const scaleX = bitmap.width / viewportWidth;
+  const scaleY = bitmap.height / viewportHeight;
+
+  const left = Math.max(0, Math.floor(region.left * scaleX));
+  const top = Math.max(0, Math.floor(region.top * scaleY));
+  const width = Math.max(1, Math.floor(region.width * scaleX));
+  const height = Math.max(1, Math.floor(region.height * scaleY));
 
   const sourceWidth = Math.min(width, bitmap.width - left);
   const sourceHeight = Math.min(height, bitmap.height - top);

@@ -4,6 +4,8 @@ import type { Mode } from "../hooks/useMode";
 interface ModeToggleProps {
   mode: Mode;
   setMode: Dispatch<SetStateAction<Mode>>;
+  syncScrollEnabled: boolean;
+  setSyncScrollEnabled: Dispatch<SetStateAction<boolean>>;
 }
 
 const buttonBaseStyle = {
@@ -16,7 +18,12 @@ const buttonBaseStyle = {
   lineHeight: 1.1,
 } as const;
 
-export default function ModeToggle({ mode, setMode }: ModeToggleProps) {
+export default function ModeToggle({
+  mode,
+  setMode,
+  syncScrollEnabled,
+  setSyncScrollEnabled,
+}: ModeToggleProps) {
   return (
     <div
       style={{
@@ -78,6 +85,25 @@ export default function ModeToggle({ mode, setMode }: ModeToggleProps) {
       >
         Off
       </button>
+      <label
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "4px",
+          color: "#e4e4e7",
+          fontSize: "12px",
+          paddingLeft: "6px",
+          borderLeft: "1px solid rgba(255, 255, 255, 0.12)",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={syncScrollEnabled}
+          onChange={(event) => setSyncScrollEnabled(event.target.checked)}
+          style={{ margin: 0 }}
+        />
+        Sync scroll
+      </label>
     </div>
   );
 }

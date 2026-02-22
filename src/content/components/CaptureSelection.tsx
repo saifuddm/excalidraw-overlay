@@ -1,21 +1,15 @@
 import { useMemo, useState } from "react";
-
-interface SelectionRect {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
+import type { CaptureResult, SelectionRect } from "../types";
 
 interface CaptureSelectionProps {
-  onDone: () => void;
+  onDone: (result?: CaptureResult) => void;
 }
 
 function normalizeRect(
   startX: number,
   startY: number,
   currentX: number,
-  currentY: number
+  currentY: number,
 ): SelectionRect {
   const left = Math.min(startX, currentX);
   const top = Math.min(startY, currentY);
@@ -46,7 +40,9 @@ export default function CaptureSelection({ onDone }: CaptureSelectionProps) {
     setCurrent({ x: event.clientX, y: event.clientY });
   };
 
-  const handleMouseUp: React.MouseEventHandler<HTMLDivElement> = async (event) => {
+  const handleMouseUp: React.MouseEventHandler<HTMLDivElement> = async (
+    event,
+  ) => {
     if (!start) return;
     event.preventDefault();
 
@@ -59,32 +55,31 @@ export default function CaptureSelection({ onDone }: CaptureSelectionProps) {
       return;
     }
 
+    let captureResult: CaptureResult | undefined;
+
     try {
       setIsCapturing(true);
       const response = (await chrome.runtime.sendMessage({
         type: "CAPTURE_VISIBLE_TAB",
         region: rect,
+        viewport: {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        },
       })) as { dataUrl?: string; error?: string };
 
       if (response?.error || !response?.dataUrl) {
         throw new Error(response?.error ?? "Capture failed.");
       }
-
-      if (!("ClipboardItem" in window)) {
-        throw new Error("Clipboard image API is not available.");
-      }
-
-      const imageBlob = await fetch(response.dataUrl).then((result) => result.blob());
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          [imageBlob.type || "image/png"]: imageBlob,
-        }),
-      ]);
+      captureResult = {
+        dataUrl: response.dataUrl,
+        rect,
+      };
     } catch (error) {
       console.error("Capture selection failed:", error);
     } finally {
       setIsCapturing(false);
-      onDone();
+      onDone(captureResult);
     }
   };
 
@@ -133,7 +128,7 @@ export default function CaptureSelection({ onDone }: CaptureSelectionProps) {
             pointerEvents: "none",
           }}
         >
-          Copying capture...
+          Capturing...
         </div>
       )}
     </div>

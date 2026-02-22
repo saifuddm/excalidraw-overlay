@@ -1,16 +1,21 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import CaptureSelection from "./components/CaptureSelection";
 import Overlay from "./components/Overlay";
 import ModeToggle from "./components/ModeToggle";
 import { useMode } from "./hooks/useMode";
+import type { CaptureResult } from "./types";
 
 export default function App() {
   const { mode, setMode } = useMode();
+  const [syncScrollEnabled, setSyncScrollEnabled] = useState(true);
+  const [pendingCapture, setPendingCapture] = useState<CaptureResult | null>(
+    null,
+  );
 
   useEffect(() => {
-    const listener: Parameters<typeof chrome.runtime.onMessage.addListener>[0] = (
-      message
-    ) => {
+    const listener: Parameters<
+      typeof chrome.runtime.onMessage.addListener
+    >[0] = (message) => {
       if (message?.type !== "TOGGLE_EXTENSION") return;
       setMode((prev) => (prev === "off" ? "annotate" : "off"));
     };
@@ -23,9 +28,28 @@ export default function App() {
 
   return (
     <>
-      <ModeToggle mode={mode} setMode={setMode} />
-      <Overlay mode={mode} />
-      {mode === "capture" && <CaptureSelection onDone={() => setMode("annotate")} />}
+      <ModeToggle
+        mode={mode}
+        setMode={setMode}
+        syncScrollEnabled={syncScrollEnabled}
+        setSyncScrollEnabled={setSyncScrollEnabled}
+      />
+      <Overlay
+        mode={mode}
+        syncScrollEnabled={syncScrollEnabled}
+        pendingCapture={pendingCapture}
+        onCaptureInserted={() => setPendingCapture(null)}
+      />
+      {mode === "capture" && (
+        <CaptureSelection
+          onDone={(result) => {
+            if (result) {
+              setPendingCapture(result);
+            }
+            setMode("annotate");
+          }}
+        />
+      )}
     </>
   );
 }
