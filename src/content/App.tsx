@@ -5,9 +5,13 @@ import ModeToggle from "./components/ModeToggle";
 import { useMode } from "./hooks/useMode";
 import type { CaptureResult } from "./types";
 
+export type SyncScrollTargetMode = "auto" | "window";
+
 export default function App() {
   const { mode, setMode } = useMode();
   const [syncScrollEnabled, setSyncScrollEnabled] = useState(true);
+  const [syncScrollTargetMode, setSyncScrollTargetMode] =
+    useState<SyncScrollTargetMode>("auto");
   const [pendingCapture, setPendingCapture] = useState<CaptureResult | null>(
     null,
   );
@@ -33,10 +37,13 @@ export default function App() {
         setMode={setMode}
         syncScrollEnabled={syncScrollEnabled}
         setSyncScrollEnabled={setSyncScrollEnabled}
+        syncScrollTargetMode={syncScrollTargetMode}
+        setSyncScrollTargetMode={setSyncScrollTargetMode}
       />
       <Overlay
         mode={mode}
         syncScrollEnabled={syncScrollEnabled}
+        syncScrollTargetMode={syncScrollTargetMode}
         pendingCapture={pendingCapture}
         onCaptureInserted={() => setPendingCapture(null)}
       />

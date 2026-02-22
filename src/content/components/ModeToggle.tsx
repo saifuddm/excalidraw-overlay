@@ -1,11 +1,14 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { Mode } from "../hooks/useMode";
+import type { SyncScrollTargetMode } from "../App";
 
 interface ModeToggleProps {
   mode: Mode;
   setMode: Dispatch<SetStateAction<Mode>>;
   syncScrollEnabled: boolean;
   setSyncScrollEnabled: Dispatch<SetStateAction<boolean>>;
+  syncScrollTargetMode: SyncScrollTargetMode;
+  setSyncScrollTargetMode: Dispatch<SetStateAction<SyncScrollTargetMode>>;
 }
 
 const buttonBaseStyle = {
@@ -23,6 +26,8 @@ export default function ModeToggle({
   setMode,
   syncScrollEnabled,
   setSyncScrollEnabled,
+  syncScrollTargetMode,
+  setSyncScrollTargetMode,
 }: ModeToggleProps) {
   return (
     <div
@@ -103,6 +108,36 @@ export default function ModeToggle({
           style={{ margin: 0 }}
         />
         Sync scroll
+      </label>
+      <label
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "4px",
+          color: "#e4e4e7",
+          fontSize: "12px",
+          paddingLeft: "6px",
+          borderLeft: "1px solid rgba(255, 255, 255, 0.12)",
+        }}
+      >
+        Target
+        <select
+          value={syncScrollTargetMode}
+          onChange={(event) =>
+            setSyncScrollTargetMode(event.target.value as SyncScrollTargetMode)
+          }
+          style={{
+            fontSize: "12px",
+            background: "#27272a",
+            color: "#e4e4e7",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "4px",
+            padding: "2px 4px",
+          }}
+        >
+          <option value="auto">Auto</option>
+          <option value="window">Window</option>
+        </select>
       </label>
     </div>
   );

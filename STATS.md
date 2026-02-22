@@ -9,10 +9,12 @@ Bug fixes - 2 Agents
 - Modal dialog z-index -> 13.6% context used for GPT-5.3 Codex
 - Image border addition -> 11.8% context used for GPT-5.3 Codex
 
+Sync Scroll on chat interface -> 17.3% context used for GPT-5.3 Codex. [Transcript](transcripts/cursor_chat_interface_scroll_synchroniz.md)
+
 # Totals
 - Input (w/ Cache Write): 0
-- Input (w/o Cache Write): 3,901,557
-- Cache Read: 17,545,888
-- Output Tokens: 93,990
-- Total Tokens: 21,541,435
-- Total Cost: $11.58
+- Input (w/o Cache Write): 4,165,557
+- Cache Read: 18,657,824
+- Output Tokens: 111,042
+- Total Tokens: 22,934,423
+- Total Cost: $12.47
