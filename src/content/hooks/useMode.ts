@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-
-export type Mode = "off" | "browse" | "annotate" | "capture";
+import type { Mode } from "../types";
 
 export function useMode() {
   const [mode, setMode] = useState<Mode>("off");
@@ -19,14 +18,13 @@ export function useMode() {
         event.preventDefault();
       }
 
+      // Global toggle shortcut for opening/closing the overlay quickly.
       if (event.altKey && event.shiftKey && event.code === "KeyA") {
         setMode((prev) => (prev === "off" ? "annotate" : "off"));
         return;
       }
 
       if (mode === "off") return;
-
-
       if (event.key === "Escape" && mode === "annotate") {
         setMode("browse");
       }

@@ -3,14 +3,11 @@ import CaptureSelection from "./components/CaptureSelection";
 import Overlay from "./components/Overlay";
 import ModeToggle from "./components/ModeToggle";
 import { useMode } from "./hooks/useMode";
-import type { CaptureResult } from "./types";
-
-export type SyncScrollTargetMode = "auto" | "window" | `element:${string}`;
-
-export interface ScrollableTargetOption {
-  id: string;
-  label: string;
-}
+import type {
+  CaptureResult,
+  ScrollableTargetOption,
+  SyncScrollTargetMode,
+} from "./types";
 
 export default function App() {
   const { mode, setMode } = useMode();

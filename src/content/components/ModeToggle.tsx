@@ -1,6 +1,19 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { Mode } from "../hooks/useMode";
-import type { ScrollableTargetOption, SyncScrollTargetMode } from "../App";
+import type {
+  Mode,
+  ScrollableTargetOption,
+  SyncScrollTargetMode,
+} from "../types";
+import {
+  checkboxLabelStyle,
+  getModeButtonStyle,
+  modeButtonRowStyle,
+  modeControlsColumnStyle,
+  modeToggleContainerStyle,
+  offButtonStyle,
+  targetLabelStyle,
+  targetSelectStyle,
+} from "./modeToggleStyles";
 
 interface ModeToggleProps {
   mode: Mode;
@@ -11,16 +24,6 @@ interface ModeToggleProps {
   setSyncScrollTargetMode: Dispatch<SetStateAction<SyncScrollTargetMode>>;
   scrollableTargetOptions: ScrollableTargetOption[];
 }
-
-const buttonBaseStyle = {
-  padding: "6px 10px",
-  border: "none",
-  borderRadius: "6px",
-  color: "#fff",
-  cursor: "pointer",
-  fontSize: "12px",
-  lineHeight: 1.1,
-} as const;
 
 export default function ModeToggle({
   mode,
@@ -40,39 +43,19 @@ export default function ModeToggle({
     : true;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: "12px",
-        right: "12px",
-        zIndex: 2147483647,
-        gap: "6px",
-        background: "rgba(24, 24, 27, 0.96)",
-        border: "1px solid rgba(255, 255, 255, 0.12)",
-        padding: "6px",
-        borderRadius: "10px",
-        pointerEvents: "auto",
-        userSelect: "none",
-      }}
-    >
-      <div style={{ display: "flex", flexDirection: "row", gap: "6px" }}>
+    <div style={modeToggleContainerStyle}>
+      <div style={modeButtonRowStyle}>
         <button
           type="button"
           onClick={() => setMode("browse")}
-          style={{
-            ...buttonBaseStyle,
-            background: mode === "browse" ? "#4f46e5" : "#3f3f46",
-          }}
+          style={getModeButtonStyle(mode === "browse")}
         >
           Browse
         </button>
         <button
           type="button"
           onClick={() => setMode("annotate")}
-          style={{
-            ...buttonBaseStyle,
-            background: mode === "annotate" ? "#4f46e5" : "#3f3f46",
-          }}
+          style={getModeButtonStyle(mode === "annotate")}
         >
           Annotate
         </button>
@@ -80,36 +63,17 @@ export default function ModeToggle({
           <button
             type="button"
             onClick={() => setMode("capture")}
-            style={{
-              ...buttonBaseStyle,
-              background: mode === "capture" ? "#4f46e5" : "#3f3f46",
-            }}
+            style={getModeButtonStyle(mode === "capture")}
           >
             Capture
           </button>
         )}
-        <button
-          type="button"
-          onClick={() => setMode("off")}
-          style={{
-            ...buttonBaseStyle,
-            background: "#b91c1c",
-          }}
-        >
+        <button type="button" onClick={() => setMode("off")} style={offButtonStyle}>
           Off
         </button>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        <label
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "4px",
-            color: "#e4e4e7",
-            fontSize: "12px",
-            paddingTop: "6px",
-          }}
-        >
+      <div style={modeControlsColumnStyle}>
+        <label style={checkboxLabelStyle}>
           <input
             type="checkbox"
             checked={syncScrollEnabled}
@@ -118,17 +82,7 @@ export default function ModeToggle({
           />
           Sync scroll
         </label>
-        <label
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "4px",
-            color: "#e4e4e7",
-            fontSize: "12px",
-            paddingLeft: "6px",
-            borderLeft: "1px solid rgba(255, 255, 255, 0.12)",
-          }}
-        >
+        <label style={targetLabelStyle}>
           Target
           <select
             value={syncScrollTargetMode}
@@ -137,15 +91,7 @@ export default function ModeToggle({
                 event.target.value as SyncScrollTargetMode,
               )
             }
-            style={{
-              fontSize: "12px",
-              background: "#27272a",
-              color: "#e4e4e7",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              borderRadius: "4px",
-              padding: "2px 4px",
-              maxWidth: "200px",
-            }}
+            style={targetSelectStyle}
           >
             <option value="auto">Auto</option>
             <option value="window">Window</option>
