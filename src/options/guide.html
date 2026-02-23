@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Excalidraw Annotate Guide</title>
+    <style>
+      :root {
+        --bg-color: #0f1115;
+        --text-color: #94a3b8;
+        --heading-color: #f8fafc;
+        --accent-color: #38bdf8;
+        --danger-color: #ef4444;
+        --border-color: #1e293b;
+      }
+
+      body {
+        margin: 0;
+        padding: 60px 24px;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        color: var(--text-color);
+        line-height: 1.7;
+        background: var(--bg-color);
+        display: flex;
+        justify-content: center;
+      }
+
+      main {
+        max-width: 600px;
+        width: 100%;
+      }
+
+      h1, h2 {
+        color: var(--heading-color);
+        font-weight: 500;
+        letter-spacing: -0.025em;
+      }
+
+      h1 {
+        margin: 0 0 16px;
+        font-size: 32px;
+      }
+
+      h2 {
+        margin: 40px 0 16px;
+        font-size: 20px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 8px;
+      }
+
+      p {
+        margin: 0 0 16px;
+      }
+
+      ul {
+        margin: 0 0 16px;
+        padding-left: 20px;
+      }
+
+      li {
+        margin-bottom: 8px;
+      }
+
+      strong {
+        color: var(--accent-color);
+        font-weight: 600;
+      }
+
+      .tip {
+        background: rgba(56, 189, 248, 0.1);
+        border-left: 3px solid var(--accent-color);
+        padding: 16px 20px;
+        border-radius: 0 6px 6px 0;
+        font-size: 14px;
+        margin-top: 32px;
+      }
+      
+      .tip p {
+        margin: 0;
+      }
+
+      .tip.danger {
+        background: rgba(239, 68, 68, 0.1);
+        border-left-color: var(--danger-color);
+      }
+
+      .tip.danger strong {
+        color: var(--danger-color);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Excalidraw Annotate</h1>
+      <p>
+        Use this extension to sketch and annotate directly on top of any webpage.
+      </p>
+
+      <h2>Quick start</h2>
+      <ul>
+        <li>Open any webpage.</li>
+        <li>Press <strong>Alt + Shift + A</strong> (or click the extension icon) to open the overlay.</li>
+        <li>Use the top controls to switch mode and configure scroll sync.</li>
+        <li>Press <strong>Alt + Shift + A</strong> again to turn the overlay off.</li>
+      </ul>
+
+      <h2>Modes</h2>
+      <p>The mode buttons in the in-page toolbar are:</p>
+      <ul>
+        <li><strong>Annotate:</strong> Excalidraw is active and receives pointer input so you can draw and edit.</li>
+        <li><strong>Browse:</strong> The page becomes fully interactive again (the Excalidraw overlay is hidden in this mode).</li>
+        <li><strong>Capture:</strong> Lets you drag a region on the page to screenshot it and insert it into Excalidraw, then returns to <strong>Annotate</strong>.</li>
+        <li><strong>Off:</strong> Removes the UI from the page.</li>
+      </ul>
+
+      <h2>Shortcuts</h2>
+      <ul>
+        <li><strong>Alt + Shift + A:</strong> Toggle between <strong>Off</strong> and <strong>Annotate</strong>.</li>
+        <li><strong>Esc</strong> in <strong>Annotate</strong>: switch to <strong>Browse</strong>.</li>
+        <li><strong>Esc</strong> in <strong>Capture</strong>: cancel capture and return to <strong>Annotate</strong>.</li>
+      </ul>
+
+      <h2>Scroll sync and target selection</h2>
+      <p>
+        <strong>Sync scroll</strong> links webpage scroll and Excalidraw canvas panning so both stay aligned.
+        It is active in <strong>Annotate</strong> and <strong>Browse</strong> modes.
+      </p>
+      <ul>
+        <li><strong>Target: Auto</strong> dynamically chooses the most relevant scroll container based on where you interact.</li>
+        <li><strong>Target: Window</strong> always uses the main page scroll (`window`).</li>
+        <li><strong>Target: element:...</strong> locks sync to one detected scrollable element from the dropdown.</li>
+      </ul>
+      <p>
+        If a chosen element target is no longer available, sync gracefully falls back to <strong>Window</strong>
+        until that element can be detected again.
+      </p>
+      <p>
+        Practical tip: keep <strong>Auto</strong> for most pages with mixed scroll containers, and switch to
+        <strong>Window</strong> or a specific element when you want more predictable behavior.
+      </p>
+
+      <div class="tip danger">
+        <strong>Warning:</strong>
+        <p>
+          Switching to <strong>Off</strong> clears the current Excalidraw scene for that tab/session.
+          The extension does not persist your annotations.
+        </p>
+      </div>
+
+      <div class="tip">
+        <strong>Tip:</strong>
+        <p>
+          Use <strong>Capture</strong> to grab part of the page first, then annotate on top of the inserted image.
+        </p>
+      </div>
+    </main>
+  </body>
+</html>
