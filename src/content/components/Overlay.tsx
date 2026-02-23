@@ -7,12 +7,13 @@ import { useEffect, useRef, useState } from "react";
 import type { BinaryFileData, ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import type { CaptureResult } from "../types";
 import type { Mode } from "../hooks/useMode";
-import type { SyncScrollTargetMode } from "../App";
+import type { ScrollableTargetOption, SyncScrollTargetMode } from "../App";
 
 interface OverlayProps {
   mode: Mode;
   syncScrollEnabled: boolean;
   syncScrollTargetMode: SyncScrollTargetMode;
+  onScrollableTargetsChange: (targets: ScrollableTargetOption[]) => void;
   pendingCapture: CaptureResult | null;
   onCaptureInserted: () => void;
 }
@@ -44,6 +45,62 @@ function isElementScrollable(element: HTMLElement) {
   const canScrollX =
     isScrollableStyle(style.overflowX) && element.scrollWidth > element.clientWidth;
   return canScrollX || canScrollY;
+}
+
+function isElementTargetMode(mode: SyncScrollTargetMode): mode is `element:${string}` {
+  return mode.startsWith("element:");
+}
+
+function getElementModeId(mode: `element:${string}`) {
+  return mode.slice("element:".length);
+}
+
+function getElementIndexWithinType(element: HTMLElement) {
+  let index = 1;
+  let sibling = element.previousElementSibling;
+  while (sibling) {
+    if (sibling.tagName === element.tagName) {
+      index += 1;
+    }
+    sibling = sibling.previousElementSibling;
+  }
+  return index;
+}
+
+function getElementTargetId(element: HTMLElement) {
+  const segments: string[] = [];
+  let current: HTMLElement | null = element;
+  let depth = 0;
+  while (current && current !== document.body && depth < 8) {
+    const tag = current.tagName.toLowerCase();
+    const id = current.id.trim();
+    if (id) {
+      segments.unshift(`${tag}#${id}`);
+      break;
+    }
+    const index = getElementIndexWithinType(current);
+    segments.unshift(`${tag}:nth-of-type(${index})`);
+    current = current.parentElement;
+    depth += 1;
+  }
+  segments.unshift("body");
+  return segments.join(">");
+}
+
+function getElementTargetLabel(element: HTMLElement) {
+  const tag = element.tagName.toLowerCase();
+  const ariaLabel = element.getAttribute("aria-label")?.trim();
+  const id = element.id.trim();
+  const role = element.getAttribute("role")?.trim();
+  const className = element.className.trim().split(/\s+/).filter(Boolean)[0];
+  const width = Math.round(element.clientWidth);
+  const height = Math.round(element.clientHeight);
+
+  if (ariaLabel) return `${ariaLabel} (${tag}, ${width}x${height})`;
+  if (id) return `#${id} (${tag}, ${width}x${height})`;
+  if (role) return `${role} (${tag}, ${width}x${height})`;
+  if (className) return `.${className} (${tag}, ${width}x${height})`;
+  return `${tag} (${width}x${height})`;
 }
 
 function findNearestScrollableAncestor(target: EventTarget | null) {
@@ -139,6 +196,7 @@ export default function Overlay({
   mode,
   syncScrollEnabled,
   syncScrollTargetMode,
+  onScrollableTargetsChange,
   pendingCapture,
   onCaptureInserted,
 }: OverlayProps) {
@@ -152,9 +210,71 @@ export default function Overlay({
   const overlayContainerRef = useRef<HTMLDivElement | null>(null);
   const activeScrollTargetRef = useRef<ScrollTarget>(window);
   const detectedScrollableTargetRef = useRef<HTMLElement | null>(null);
+  const selectableTargetsRef = useRef<Map<string, HTMLElement>>(new Map());
   const previousWindowScrollRef = useRef<ScrollPoint | null>(null);
   const previousElementScrollRef = useRef<WeakMap<HTMLElement, ScrollPoint>>(new WeakMap());
   const canvasReconcileRafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const scheduleRef = { timeoutId: null as number | null };
+    const scanScrollableTargets = () => {
+      const overlayNode = overlayContainerRef.current;
+      const allElements = document.body.querySelectorAll<HTMLElement>("*");
+      const nextMap = new Map<string, HTMLElement>();
+      const nextOptions: ScrollableTargetOption[] = [];
+
+      for (const element of allElements) {
+        if (overlayNode?.contains(element)) continue;
+        if (!isElementScrollable(element)) continue;
+        const rect = element.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) continue;
+
+        const id = getElementTargetId(element);
+        if (nextMap.has(id)) continue;
+        nextMap.set(id, element);
+        nextOptions.push({
+          id,
+          label: getElementTargetLabel(element),
+        });
+      }
+
+      selectableTargetsRef.current = nextMap;
+      onScrollableTargetsChange(nextOptions);
+    };
+
+    const scheduleScan = () => {
+      if (scheduleRef.timeoutId !== null) {
+        window.clearTimeout(scheduleRef.timeoutId);
+      }
+      scheduleRef.timeoutId = window.setTimeout(() => {
+        scheduleRef.timeoutId = null;
+        scanScrollableTargets();
+      }, 150);
+    };
+
+    scanScrollableTargets();
+
+    const observer = new MutationObserver(() => {
+      scheduleScan();
+    });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["style", "class", "id", "aria-label", "role"],
+    });
+    window.addEventListener("resize", scheduleScan);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", scheduleScan);
+      if (scheduleRef.timeoutId !== null) {
+        window.clearTimeout(scheduleRef.timeoutId);
+      }
+      selectableTargetsRef.current = new Map();
+      onScrollableTargetsChange([]);
+    };
+  }, [onScrollableTargetsChange]);
 
   useEffect(() => {
     if (!syncScrollEnabled || (mode !== "annotate" && mode !== "browse")) {
@@ -194,8 +314,22 @@ export default function Overlay({
       detectedScrollableTargetRef.current = detected;
       return detected ?? window;
     };
-    const resolveTarget = (eventTarget: EventTarget | null) =>
-      syncScrollTargetMode === "auto" ? toScrollTarget(eventTarget) : window;
+    const getExplicitTarget = () => {
+      if (!isElementTargetMode(syncScrollTargetMode)) return null;
+      const elementId = getElementModeId(syncScrollTargetMode);
+      const target = selectableTargetsRef.current.get(elementId);
+      if (!target || !target.isConnected || !isElementScrollable(target)) return null;
+      return target;
+    };
+    const getConfiguredTarget = () => {
+      if (syncScrollTargetMode === "auto") return getAutoPreferredTarget();
+      if (syncScrollTargetMode === "window") return window;
+      return getExplicitTarget() ?? window;
+    };
+    const resolveTarget = (eventTarget: EventTarget | null) => {
+      if (syncScrollTargetMode === "auto") return toScrollTarget(eventTarget);
+      return getConfiguredTarget();
+    };
     const getPreviousScroll = (target: ScrollTarget) => {
       if (isWindowTarget(target)) return previousWindowScrollRef.current;
       return previousElementScrollRef.current.get(target) ?? null;
@@ -208,6 +342,12 @@ export default function Overlay({
       previousElementScrollRef.current.set(target, scroll);
     };
     const updateActiveTargetFromInteraction = (eventTarget: EventTarget | null) => {
+      if (syncScrollTargetMode !== "auto") {
+        const configuredTarget = getConfiguredTarget();
+        activeScrollTargetRef.current = configuredTarget;
+        return configuredTarget;
+      }
+
       if (syncScrollTargetMode === "auto" && isEventInsideOverlay(eventTarget)) {
         const preferredTarget = getAutoPreferredTarget();
         activeScrollTargetRef.current = preferredTarget;
@@ -240,7 +380,7 @@ export default function Overlay({
           ? isWindowTarget(activeScrollTargetRef.current)
             ? getAutoPreferredTarget()
             : activeScrollTargetRef.current
-          : window;
+          : getConfiguredTarget();
       activeScrollTargetRef.current = target;
       const requestedPageDeltaX = -(deltaSceneX * zoom.value);
       const requestedPageDeltaY = -(deltaSceneY * zoom.value);
@@ -293,7 +433,22 @@ export default function Overlay({
     const handleScroll = (event: Event) => {
       if (syncScrollTargetMode === "auto" && isEventInsideOverlay(event.target)) return;
 
-      const target = resolveTarget(event.target);
+      if (isElementTargetMode(syncScrollTargetMode)) {
+        const explicitTarget = getExplicitTarget();
+        if (explicitTarget && event.target !== explicitTarget) return;
+        if (
+          !explicitTarget &&
+          event.target !== window &&
+          event.target !== document &&
+          event.target !== document.documentElement &&
+          event.target !== document.body
+        ) {
+          return;
+        }
+      }
+
+      const target =
+        syncScrollTargetMode === "auto" ? resolveTarget(event.target) : getConfiguredTarget();
       activeScrollTargetRef.current = target;
       if (!isWindowTarget(target)) {
         detectedScrollableTargetRef.current = target;
@@ -334,6 +489,8 @@ export default function Overlay({
         capture: true,
         passive: true,
       });
+    }
+    if (syncScrollTargetMode !== "window") {
       document.addEventListener("scroll", handleScroll, {
         capture: true,
         passive: true,
@@ -349,6 +506,8 @@ export default function Overlay({
       document.removeEventListener("pointerdown", handleInteraction, true);
       if (syncScrollTargetMode === "auto") {
         document.removeEventListener("wheel", handleInteraction, true);
+      }
+      if (syncScrollTargetMode !== "window") {
         document.removeEventListener("scroll", handleScroll, true);
       }
       window.removeEventListener("scroll", handleScroll);

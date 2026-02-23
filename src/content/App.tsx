@@ -5,13 +5,21 @@ import ModeToggle from "./components/ModeToggle";
 import { useMode } from "./hooks/useMode";
 import type { CaptureResult } from "./types";
 
-export type SyncScrollTargetMode = "auto" | "window";
+export type SyncScrollTargetMode = "auto" | "window" | `element:${string}`;
+
+export interface ScrollableTargetOption {
+  id: string;
+  label: string;
+}
 
 export default function App() {
   const { mode, setMode } = useMode();
   const [syncScrollEnabled, setSyncScrollEnabled] = useState(true);
   const [syncScrollTargetMode, setSyncScrollTargetMode] =
     useState<SyncScrollTargetMode>("auto");
+  const [scrollableTargetOptions, setScrollableTargetOptions] = useState<
+    ScrollableTargetOption[]
+  >([]);
   const [pendingCapture, setPendingCapture] = useState<CaptureResult | null>(
     null,
   );
@@ -39,11 +47,13 @@ export default function App() {
         setSyncScrollEnabled={setSyncScrollEnabled}
         syncScrollTargetMode={syncScrollTargetMode}
         setSyncScrollTargetMode={setSyncScrollTargetMode}
+        scrollableTargetOptions={scrollableTargetOptions}
       />
       <Overlay
         mode={mode}
         syncScrollEnabled={syncScrollEnabled}
         syncScrollTargetMode={syncScrollTargetMode}
+        onScrollableTargetsChange={setScrollableTargetOptions}
         pendingCapture={pendingCapture}
         onCaptureInserted={() => setPendingCapture(null)}
       />
