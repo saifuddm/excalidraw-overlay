@@ -24,6 +24,32 @@ export function useMode() {
         return;
       }
 
+      // Mode shortcuts (Alt+B Browse, Alt+A Annotate, Alt+C Capture).
+      if (
+        event.altKey &&
+        !event.shiftKey &&
+        !isTypingTarget(event.target)
+      ) {
+        if (event.code === "KeyB" && mode !== "off") {
+          event.preventDefault();
+          setMode("browse");
+          return;
+        }
+        if (event.code === "KeyA" && mode !== "off") {
+          event.preventDefault();
+          setMode("annotate");
+          return;
+        }
+        if (
+          event.code === "KeyC" &&
+          (mode === "annotate" || mode === "browse")
+        ) {
+          event.preventDefault();
+          setMode("capture");
+          return;
+        }
+      }
+
       if (mode === "off") return;
       if (event.key === "Escape" && mode === "annotate") {
         setMode("browse");
@@ -34,18 +60,11 @@ export function useMode() {
       }
     };
 
-    const handleKeyUp = (event: KeyboardEvent) => {
-      if (event.key === "Alt" && mode === "browse") {
-        setMode("annotate");
-      }
-    };
 
     document.addEventListener("keydown", handleKeyDown, true);
-    document.addEventListener("keyup", handleKeyUp, true);
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown, true);
-      document.removeEventListener("keyup", handleKeyUp, true);
     };
   }, [mode]);
 

@@ -20,6 +20,9 @@ export default function Popup() {
       <p style={{ margin: 0, fontSize: "12px", lineHeight: 1.4 }}>
         Use Alt+Shift+A on any page to toggle the overlay.
       </p>
+      <p style={{ margin: "6px 0 0", fontSize: "11px", lineHeight: 1.4, color: "#666" }}>
+        Alt+B Browse, Alt+A Annotate, Alt+C Capture
+      </p>
       <button
         type="button"
         onClick={handleOpenGuide}

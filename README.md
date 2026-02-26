@@ -37,6 +37,9 @@ The floating toolbar appears at the top-right when the extension is active.
 ## Keyboard Shortcuts
 
 - `Alt + Shift + A`: toggle extension on/off (from any page).
+- `Alt + B`: switch to Browse mode (when extension is on).
+- `Alt + A`: switch to Annotate mode (when extension is on).
+- `Alt + C`: switch to Capture mode (when extension is on).
 - `Esc` in Annotate mode: switch to Browse mode.
 - `Esc` in Capture mode: cancel capture and return to Annotate mode.
 

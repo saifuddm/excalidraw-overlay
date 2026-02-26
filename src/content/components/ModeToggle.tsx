@@ -15,6 +15,12 @@ import {
   targetSelectStyle,
 } from "./modeToggleStyles";
 
+const MODE_SHORTCUTS: Record<Exclude<Mode, "off">, string> = {
+  browse: "Alt+B",
+  annotate: "Alt+A",
+  capture: "Alt+C",
+};
+
 interface ModeToggleProps {
   mode: Mode;
   setMode: Dispatch<SetStateAction<Mode>>;
@@ -50,14 +56,16 @@ export default function ModeToggle({
           onClick={() => setMode("browse")}
           style={getModeButtonStyle(mode === "browse")}
         >
-          Browse
+          <span>Browse</span>
+          <span style={{ fontSize: "10px", opacity: 0.85 }}>{MODE_SHORTCUTS.browse}</span>
         </button>
         <button
           type="button"
           onClick={() => setMode("annotate")}
           style={getModeButtonStyle(mode === "annotate")}
         >
-          Annotate
+          <span>Annotate</span>
+          <span style={{ fontSize: "10px", opacity: 0.85 }}>{MODE_SHORTCUTS.annotate}</span>
         </button>
         {(mode === "annotate" || mode === "capture") && (
           <button
@@ -65,11 +73,12 @@ export default function ModeToggle({
             onClick={() => setMode("capture")}
             style={getModeButtonStyle(mode === "capture")}
           >
-            Capture
+            <span>Capture</span>
+            <span style={{ fontSize: "10px", opacity: 0.85 }}>{MODE_SHORTCUTS.capture}</span>
           </button>
         )}
         <button type="button" onClick={() => setMode("off")} style={offButtonStyle}>
-          Off
+          <span>Off</span>
         </button>
       </div>
       <div style={modeControlsColumnStyle}>
