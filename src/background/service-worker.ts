@@ -15,6 +15,68 @@ type CaptureViewport = {
   height: number;
 };
 
+const IDB_DATABASE_NAME = "excalidraw-annotate";
+const IDB_OBJECT_STORE_FILES = "files";
+
+type ExcalidrawFileRecord = {
+  id: string;
+  mimeType: string;
+  dataURL: string;
+  created: number;
+};
+
+function openExcalidrawIDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(IDB_DATABASE_NAME, 1);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(IDB_OBJECT_STORE_FILES)) {
+        db.createObjectStore(IDB_OBJECT_STORE_FILES, { keyPath: "id" });
+      }
+    };
+  });
+}
+
+async function saveExcalidrawFiles(
+  files: ExcalidrawFileRecord[],
+): Promise<void> {
+  const db = await openExcalidrawIDB();
+  const tx = db.transaction(IDB_OBJECT_STORE_FILES, "readwrite");
+  const store = tx.objectStore(IDB_OBJECT_STORE_FILES);
+  store.clear();
+  for (const file of files) {
+    store.put(file);
+  }
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+  db.close();
+}
+
+async function loadExcalidrawFiles(
+  fileIds: string[],
+): Promise<ExcalidrawFileRecord[]> {
+  const db = await openExcalidrawIDB();
+  const tx = db.transaction(IDB_OBJECT_STORE_FILES, "readonly");
+  const store = tx.objectStore(IDB_OBJECT_STORE_FILES);
+  const files: ExcalidrawFileRecord[] = [];
+  for (const id of fileIds) {
+    const file = await new Promise<ExcalidrawFileRecord | undefined>(
+      (resolve, reject) => {
+        const req = store.get(id);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      },
+    );
+    if (file) files.push(file);
+  }
+  db.close();
+  return files;
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "CAPTURE_VISIBLE_TAB") {
     handleCaptureVisibleTab(
@@ -35,6 +97,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       url: sender.tab?.url ?? "",
       title: sender.tab?.title ?? "",
     });
+  }
+
+  if (message?.type === "EXCALIDRAW_SAVE_FILES") {
+    const files = message.files as ExcalidrawFileRecord[];
+    saveExcalidrawFiles(files ?? [])
+      .then(() => sendResponse({ success: true }))
+      .catch((err) => {
+        console.error("Excalidraw save files failed:", err);
+        sendResponse({ success: false, error: String(err) });
+      });
+    return true;
+  }
+
+  if (message?.type === "EXCALIDRAW_LOAD_FILES") {
+    const fileIds = (message.fileIds as string[]) ?? [];
+    loadExcalidrawFiles(fileIds)
+      .then((files) => sendResponse({ files }))
+      .catch((err) => {
+        console.error("Excalidraw load files failed:", err);
+        sendResponse({ files: [] });
+      });
+    return true;
   }
 
   return true;

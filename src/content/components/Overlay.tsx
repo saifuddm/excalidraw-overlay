@@ -1,5 +1,5 @@
 import { Excalidraw } from "@excalidraw/excalidraw";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import { useScrollableTargets } from "../hooks/useScrollableTargets";
 import { useScrollSync } from "../hooks/useScrollSync";
@@ -21,6 +21,8 @@ interface OverlayProps {
   onScrollableTargetsChange: (targets: ScrollableTargetOption[]) => void;
   pendingCapture: CaptureResult | null;
   onCaptureInserted: () => void;
+  excalidrawApiRef?: MutableRefObject<ExcalidrawImperativeAPI | null>;
+  onApiReady?: (ready: boolean) => void;
 }
 
 export default function Overlay({
@@ -30,6 +32,8 @@ export default function Overlay({
   onScrollableTargetsChange,
   pendingCapture,
   onCaptureInserted,
+  excalidrawApiRef: externalApiRef,
+  onApiReady,
 }: OverlayProps) {
   const isAnnotating = mode === "annotate";
   const isBrowseLikeMode = mode === "browse" || mode === "capture";
@@ -41,6 +45,13 @@ export default function Overlay({
     overlayContainerRef,
     onScrollableTargetsChange,
   });
+
+  useEffect(() => {
+    return () => {
+      if (externalApiRef) externalApiRef.current = null;
+      onApiReady?.(false);
+    };
+  }, [externalApiRef, onApiReady]);
 
   // Scroll sync keeps separate refs and guards inside the hook to avoid
   // canvas<->page feedback loops while preserving the existing behavior.
@@ -111,7 +122,10 @@ export default function Overlay({
       <Excalidraw
         excalidrawAPI={(api) => {
           excalidrawApiRef.current = api;
-          setIsApiReady(Boolean(api));
+          if (externalApiRef) externalApiRef.current = api;
+          const ready = Boolean(api);
+          setIsApiReady(ready);
+          onApiReady?.(ready);
         }}
         initialData={{
           appState: {

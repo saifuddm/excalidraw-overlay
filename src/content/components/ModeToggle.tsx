@@ -29,6 +29,9 @@ interface ModeToggleProps {
   syncScrollTargetMode: SyncScrollTargetMode;
   setSyncScrollTargetMode: Dispatch<SetStateAction<SyncScrollTargetMode>>;
   scrollableTargetOptions: ScrollableTargetOption[];
+  onSave?: () => void;
+  onLoad?: () => void;
+  isSaveLoadDisabled?: boolean;
 }
 
 export default function ModeToggle({
@@ -39,6 +42,9 @@ export default function ModeToggle({
   syncScrollTargetMode,
   setSyncScrollTargetMode,
   scrollableTargetOptions,
+  onSave,
+  onLoad,
+  isSaveLoadDisabled = false,
 }: ModeToggleProps) {
   const hasSelectedElementMode = syncScrollTargetMode.startsWith("element:");
   const selectedElementId = hasSelectedElementMode
@@ -81,6 +87,32 @@ export default function ModeToggle({
           <span>Off</span>
         </button>
       </div>
+      {(onSave != null || onLoad != null) && (
+        <div style={modeButtonRowStyle}>
+          {onSave != null && (
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={mode !== "annotate" || isSaveLoadDisabled}
+              style={getModeButtonStyle(false)}
+              title="Save scene"
+            >
+              Save
+            </button>
+          )}
+          {onLoad != null && (
+            <button
+              type="button"
+              onClick={onLoad}
+              disabled={mode !== "annotate" || isSaveLoadDisabled}
+              style={getModeButtonStyle(false)}
+              title="Load scene (replaces current canvas)"
+            >
+              Load
+            </button>
+          )}
+        </div>
+      )}
       <div style={modeControlsColumnStyle}>
         <label style={checkboxLabelStyle}>
           <input

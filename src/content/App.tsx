@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CaptureSelection from "./components/CaptureSelection";
 import FloatingToolbar, { type ToolbarPosition } from "./components/FloatingToolbar";
 import Overlay from "./components/Overlay";
@@ -9,6 +9,8 @@ import type {
   ScrollableTargetOption,
   SyncScrollTargetMode,
 } from "./types";
+import { saveScene, loadScene } from "./utils/sceneStorage";
+import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 const STORAGE_KEY_POSITION = "excalidraw-annotate-toolbar-position";
 const STORAGE_KEY_MINIMIZED = "excalidraw-annotate-toolbar-minimized";
@@ -35,6 +37,8 @@ export default function App() {
   );
   const [toolbarPosition, setToolbarPosition] = useState<ToolbarPosition>(getDefaultPosition);
   const [toolbarMinimized, setToolbarMinimized] = useState(false);
+  const excalidrawApiRef = useRef<ExcalidrawImperativeAPI | null>(null);
+  const [excalidrawApiReady, setExcalidrawApiReady] = useState(false);
 
   useEffect(() => {
     chrome.storage.local.get([STORAGE_KEY_POSITION, STORAGE_KEY_MINIMIZED], (result) => {
@@ -89,6 +93,9 @@ export default function App() {
           syncScrollTargetMode={syncScrollTargetMode}
           setSyncScrollTargetMode={setSyncScrollTargetMode}
           scrollableTargetOptions={scrollableTargetOptions}
+          onSave={() => saveScene(excalidrawApiRef.current)}
+          onLoad={() => loadScene(excalidrawApiRef.current)}
+          isSaveLoadDisabled={!excalidrawApiReady}
         />
       </FloatingToolbar>
       <Overlay
@@ -98,6 +105,8 @@ export default function App() {
         onScrollableTargetsChange={setScrollableTargetOptions}
         pendingCapture={pendingCapture}
         onCaptureInserted={() => setPendingCapture(null)}
+        excalidrawApiRef={excalidrawApiRef}
+        onApiReady={setExcalidrawApiReady}
       />
       {mode === "capture" && (
         <CaptureSelection
