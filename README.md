@@ -12,6 +12,7 @@ This extension injects a full-page Excalidraw canvas into the active tab so you 
 - temporarily browse the page without closing the annotation session
 - capture a selected on-screen region and insert it into the canvas
 - keep page scrolling and canvas panning synchronized while annotating
+- save and load your scene (elements + app state + images) so it persists across sessions and sites
 
 ## High-Level Features
 
@@ -19,6 +20,7 @@ This extension injects a full-page Excalidraw canvas into the active tab so you 
 - **Mode-based workflow**: switch between browsing, annotating, and capture flow using quick toggles.
 - **Region capture to canvas**: drag-select a rectangular area of the visible tab and insert it as an image element with a border.
 - **Scroll sync option**: links page scroll and Excalidraw viewport movement for smoother context tracking.
+- **Save / Load**: one global scene stored in extension storage (scene JSON in `chrome.storage.local`, images in IndexedDB in the background). Save writes the current canvas; Load clears the canvas and restores the last saved scene. Works across all websites.
 - **Keyboard accessibility**: includes quick toggle shortcut and escape handling for fast transitions.
 
 ## Toggle Buttons Explained
@@ -29,6 +31,7 @@ The floating toolbar appears at the top-right when the extension is active.
 - **Annotate**: enables full interaction with Excalidraw (draw, move, edit, select).
 - **Capture**: starts region-selection mode; after you drag to select an area, the screenshot is inserted into the Excalidraw scene and mode returns to Annotate.
 - **Off**: closes the overlay completely.
+- **Save** / **Load**: (in Annotate mode) Save stores the current scene and images in extension storage; Load replaces the canvas with the last saved scene. One global scene shared across all tabs/sites.
 - **Sync scroll (checkbox)**: when enabled, scrolling the webpage and panning the Excalidraw viewport stay in sync (active during browse/annotate behavior).
 - **Scroll target (Auto/Window)**:
   - `Auto` (recommended) syncs with the active scroll surface, including nested containers such as full-height chat panes using `overflow-y: auto`.
@@ -53,8 +56,8 @@ The floating toolbar appears at the top-right when the extension is active.
 
 ## Project Structure (Key Parts)
 
-- `src/content/`: injected UI (toolbar, overlay, mode logic, capture selection)
-- `src/background/service-worker.ts`: extension action and tab capture handling
+- `src/content/`: injected UI (toolbar, overlay, mode logic, capture selection, scene save/load via `sceneStorage.ts`)
+- `src/background/service-worker.ts`: extension action, tab capture, and Excalidraw file storage (IndexedDB under extension origin so saved images are shared across all sites)
 - `src/popup/`: lightweight popup UI with shortcut hint
 - `src/manifest.json`: extension permissions, icons, and entry points
 
@@ -89,5 +92,5 @@ npm run build
 ## Permissions (Why They Exist)
 
 - `activeTab`: interact with the current tab when the user activates the extension.
-- `storage`: persist extension state/config as needed.
+- `storage`: persist toolbar position, minimized state, and the saved Excalidraw scene (scene JSON in `chrome.storage.local`; images are stored in IndexedDB in the background under the extension origin).
 - `<all_urls>` host permission: allow content script injection across webpages.

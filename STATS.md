@@ -11,10 +11,4 @@ Bug fixes - 2 Agents
 
 Sync Scroll on chat interface -> 17.3% context used for GPT-5.3 Codex. [Transcript](transcripts/cursor_chat_interface_scroll_synchroniz.md)
 
-# Totals
-- Input (w/ Cache Write): 0
-- Input (w/o Cache Write): 4,165,557
-- Cache Read: 18,657,824
-- Output Tokens: 111,042
-- Total Tokens: 22,934,423
-- Total Cost: $12.47
+Scene storage and using indexedDB -> 55% context used for auto. [Transcript](transcripts/cursor_excalidraw_storage_and_save_feat.md)

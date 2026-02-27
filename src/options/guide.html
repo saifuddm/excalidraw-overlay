@@ -113,6 +113,18 @@
         <li><strong>Off:</strong> Removes the UI from the page.</li>
       </ul>
 
+      <h2>Save and Load</h2>
+      <p>
+        In <strong>Annotate</strong> mode, the toolbar shows <strong>Save</strong> and <strong>Load</strong> buttons.
+      </p>
+      <ul>
+        <li><strong>Save</strong> stores the current scene (elements, app state, and any captured images) in the extension. The scene is <em>global</em>: one saved scene shared across all websites and tabs.</li>
+        <li><strong>Load</strong> clears the current canvas and restores the last saved scene. Use it on any page to get back your saved annotations and images.</li>
+      </ul>
+      <p>
+        Scene data is kept in extension storage (scene JSON in Chrome storage; images in the extension’s IndexedDB so they persist across sites). Saving again overwrites the previous save.
+      </p>
+
       <h2>Shortcuts</h2>
       <ul>
         <li><strong>Alt + Shift + A:</strong> Toggle between <strong>Off</strong> and <strong>Annotate</strong>.</li>
@@ -145,8 +157,9 @@
       <div class="tip danger">
         <strong>Warning:</strong>
         <p>
-          Switching to <strong>Off</strong> clears the current Excalidraw scene for that tab/session.
-          The extension does not persist your annotations.
+          Switching to <strong>Off</strong> hides the overlay and clears the in-memory scene for that tab.
+          Use <strong>Save</strong> before turning <strong>Off</strong> if you want to keep your work.
+          <strong>Load</strong> replaces whatever is on the canvas with the last saved scene.
         </p>
       </div>
 
@@ -154,6 +167,7 @@
         <strong>Tip:</strong>
         <p>
           Use <strong>Capture</strong> to grab part of the page first, then annotate on top of the inserted image.
+          Save your scene to keep drawings and captures across sessions and sites.
         </p>
       </div>
     </main>
