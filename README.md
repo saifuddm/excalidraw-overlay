@@ -8,7 +8,9 @@ Draw and annotate directly on top of any webpage using an Excalidraw-powered ove
 
 A short screen recording shows the overlay, mode toggles, and save/load flow:
 
-**[Watch: Excalidraw Overlay demo](documents/Excalidraw-Overlay.mp4)**
+![Excalidraw Overlay demo](documents/Excalidraw-Overlay.gif)
+**[Video Link](documents/Excalidraw-Overlay.mp4)**
+
 
 ## What This Project Does
 
