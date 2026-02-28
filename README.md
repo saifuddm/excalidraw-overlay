@@ -4,6 +4,12 @@ Draw and annotate directly on top of any webpage using an Excalidraw-powered ove
 
 ![Excalidraw Annotate icon](icons/icon128.png)
 
+## Demo
+
+A short screen recording shows the overlay, mode toggles, and save/load flow:
+
+**[Watch: Excalidraw Overlay demo](documents/Excalidraw-Overlay.mp4)**
+
 ## What This Project Does
 
 This extension injects a full-page Excalidraw canvas into the active tab so you can:
